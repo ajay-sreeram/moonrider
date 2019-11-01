@@ -1,8 +1,8 @@
 <!-- https://freesound.org/people/deleted_user_2731495/sounds/183881/ -->
 <audio id="introSong" src="assets/sounds/menu.ogg" loop></audio>
 
-{% set firestore = IS_PRODUCTION and 'moonrider-prod' or 'moonrider-dev' %}
-{% set firekey = IS_PRODUCTION and 'AIzaSyAilakXLvMgwPcBcHs3oys51eLp4yrfz0w' or 'AIzaSyALCaDKg0b7aD3nOyRv_f5RTZ1vedrGyWw' %}
+{% set firestore = IS_PRODUCTION and 'moonrider-byaj' or 'moonrider-byaj' %}
+{% set firekey = IS_PRODUCTION and 'AIzaSyAy-tO0QaRgTIkiIbDMqUcU8zz9naSYZ68' or 'AIzaSyAy-tO0QaRgTIkiIbDMqUcU8zz9naSYZ68' %}
 
 <!-- pool__beat-shadow="mixin: beatShadow; size: 100; container: #beatContainer; dynamic: true" -->
 <a-scene
@@ -30,7 +30,7 @@
   {% if DEBUG_INSPECTOR %}
     inspector="url: http://localhost:3333/dist/aframe-inspector.js"
   {% endif %}
-  leaderboard="apiKey: {{ firekey }}; authDomain: {{ firestore }}.firebaseapp.com; databaseURL: https://{{ firestore }}.firebaseio.com; projectId: {{ firestore }}; storageBucket: {{ firestore }}.appspot.com; messagingSenderId: 172125624222"
+  leaderboard="apiKey: {{ firekey }}; authDomain: {{ firestore }}.firebaseapp.com; databaseURL: https://{{ firestore }}.firebaseio.com; projectId: {{ firestore }}; storageBucket: {{ firestore }}.appspot.com; messagingSenderId: 265242874795"
   loading-screen="backgroundColor: #000"
   pool__beat-arrow-blue="mixin: arrowBlueBeat; size: 30; container: #beatContainer; dynamic: true"
   pool__beat-arrow-red="mixin: arrowRedBeat; size: 30; container: #beatContainer; dynamic: true"
