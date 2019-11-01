@@ -1,3 +1,6 @@
+//http://moonrider.xyz/?debugcontroller=punch
+//working url: http://localhost:3000/?type=punch&debug=oculus&debugvr=true
+
 /* global localStorage */
 import COLORS from '../constants/colors';
 const utils = require('../utils');
@@ -563,6 +566,7 @@ AFRAME.registerState({
       state.isSearching = false;
       state.isLoading = true;
       state.loadingText = 'Loading...'
+      state.inVR = true
 
       gtag('event', 'colorscheme', {event_label: state.colorScheme});
     },
@@ -666,6 +670,7 @@ AFRAME.registerState({
       }
 
       computeBeatsText(state);
+      state.inVR = false
     },
 
     songloadcancel: state => {
