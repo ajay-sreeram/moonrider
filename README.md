@@ -84,3 +84,5 @@ npm run deploy
 ```
 
 The website will be available on `https://yourusername.github.io/moonrider/`.
+
+pose trakking url: `http://...:3000/?type=punch&debug=oculus&debugvr=true`
