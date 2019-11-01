@@ -69,8 +69,7 @@ AFRAME.registerComponent('leaderboard', {
 
   addScore: function () {
     const state = this.el.sceneEl.systems.state.state;
-
-    if (!state.isVictory || !state.inVR) { return; }
+    if (!state.isVictory) { return; }
 
     const scoreData = {
       accuracy: state.score.accuracy,
@@ -83,7 +82,7 @@ AFRAME.registerComponent('leaderboard', {
     };
     this.db.add(scoreData);
     this.addEventDetail.scoreData = scoreData;
-    this.el.emit('leaderboardscoreadded', this.addEventDetail, false);
+    this.el.emit('leaderboardscoreadded', this.addEventDetail, false);    
   },
 
   fetchScores: function (challengeId) {
