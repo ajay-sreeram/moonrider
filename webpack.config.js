@@ -53,7 +53,7 @@ module.exports = {
               globals: {
                 DEBUG_AFRAME: !!process.env.DEBUG_AFRAME,
                 DEBUG_LOG: !!process.env.DEBUG_LOG,
-                DEBUG_KEYBOARD: !!process.env.DEBUG_KEYBOARD,
+                DEBUG_KEYBOARD: !process.env.DEBUG_KEYBOARD,
                 DEBUG_INSPECTOR: !!process.env.DEBUG_INSPECTOR,
                 HOST: ip.address(),
                 IS_PRODUCTION: process.env.NODE_ENV === 'production',
