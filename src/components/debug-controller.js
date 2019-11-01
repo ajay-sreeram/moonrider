@@ -1,11 +1,215 @@
+//https://hpssjellis.github.io/tensorflowjs-bvh/save-video/
+let video;
+let videoWidth = 0
+let videoHeight = 0
+let visibleVideoWidth = 100
+let visibleVideoHeight = 100
+
+async function setupCamera() {
+  const video = document.getElementById('video');  
+  video.width = visibleVideoWidth;
+  video.height = visibleVideoHeight;
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    'audio': false,
+    'video': {
+      width: videoWidth,
+      height: videoHeight,
+    },
+  });
+  video.srcObject = stream;
+
+  return new Promise((resolve) => {
+    video.onloadedmetadata = () => resolve(video);
+  });
+}
+
+let poseNetModel = null
+let video_camera = null
+let poseNetState = null
+
+
+setTimeout(() => {
+  // We load the model.
+  ;(async () => {
+
+    let bounding_rec = document.body.getBoundingClientRect()
+    videoWidth = bounding_rec.width
+    videoHeight = bounding_rec.height
+    poseNetState = {
+      minPoseConfidence: 0.1,
+      minPartConfidence: 0.5,
+      algorithm: 'single-pose',
+      flipHorizontal: true,
+      outputStride: 16,
+      imageScaleFactor: 1,
+      output: {
+        showVideo: true,
+        showPoints: true,
+      },
+    };
+
+    poseNetModel = await posenet.load(1.01);//['1.01', '1.00', '0.75', '0.50']
+    console.log("poseNetModel inside: ", poseNetModel)
+
+    try {
+      video_camera = await setupCamera();
+      video_camera.play();
+      console.log("video inside: ", video_camera)
+      detectPoseInRealTime(video_camera)
+    } catch (e) {
+      throw e;
+    }
+  })();
+}, 1000)
+
+
+function detectPoseInRealTime(video_camera) {
+  const canvas = document.getElementById('output');
+  const ctx = canvas.getContext('2d');  
+
+  canvas.width = videoWidth;
+  canvas.height = videoHeight;
+
+  async function poseDetectionFrame() {
+    if (document.readyState == 'complete') {
+      let poses = [];
+      let minPoseConfidence;
+      let minPartConfidence;    
+      switch (poseNetState.algorithm) {
+        case 'single-pose':
+          const pose = await poseNetModel.estimateSinglePose(video_camera, 
+            poseNetState.imageScaleFactor,
+            poseNetState.flipHorizontal,
+            poseNetState.outputStride
+            );        
+          //poses = poses.concat(pose);
+          poses.push(pose)
+          minPoseConfidence = +poseNetState.minPoseConfidence;
+          minPartConfidence = +poseNetState.minPartConfidence;
+          break;
+      }
+
+      //onsole.log("pose detection frame: ", minPoseConfidence)
+
+      ctx.clearRect(0, 0, videoWidth, videoHeight);
+
+      if (poseNetState.output.showVideo) {
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.translate(-videoWidth, 0);
+        ctx.restore();
+      }
+      
+      poses.forEach(({score, keypoints}) => {
+        //console.log("pose score: ", score, minPoseConfidence)
+        if (score >= minPoseConfidence) {        
+          if (poseNetState.output.showPoints) {
+            drawKeypoints(keypoints, minPartConfidence, ctx);
+          }
+        }
+      });
+    }else{
+      console.log("dom not ready")
+    }
+    requestAnimationFrame(poseDetectionFrame);
+  }
+
+  poseDetectionFrame();
+}
+
+function drawKeypoints(keypoints, minConfidence, ctx, scale = 1) {  
+  let leftWrist = keypoints.find(point => point.part === 'leftWrist');//'leftEar');nose
+  let rightWrist = keypoints.find(point => point.part === 'rightWrist');//'rightWrist');
+  
+  /*
+  for(var i=0; i< keypoints.length; i++){
+    if (keypoints[i].score > minConfidence) {
+      const {y, x} = keypoints[i].position;
+      drawPoint(ctx, y * scale, x * scale, 5, "WHITE");
+    }    
+  }
+  */
+  
+  if (rightWrist.score > minConfidence) {
+    setHandPosition(rightWrist.position.x, rightWrist.position.y, 'right')  
+  }
+  if (leftWrist.score > minConfidence) {
+    setHandPosition(leftWrist.position.x, leftWrist.position.y, 'left')
+  }
+  
+}
+
+/**
+ * Changing number to different range
+ * @param {*} oldValue - current value
+ * @param {*} oldMin 
+ * @param {*} oldMax 
+ * @param {*} newMin 
+ * @param {*} newMax 
+ */
+function change_num_range(oldValue, oldMin, oldMax, newMin, newMax){
+  let oldRange = (oldMax - oldMin)
+  let newValue = 0
+  if (oldRange == 0)
+      newValue = newMin
+  else
+  {
+      let newRange = (newMax - newMin)  
+      newValue = (((oldValue - oldMin) * newRange) / oldRange) + newMin
+  }
+  return newValue
+}
+
+function drawPoint(ctx, y, x, r, color) {  
+  x = change_num_range(x, 
+                      0, visibleVideoWidth,
+                      0, videoWidth
+                      )
+  y = change_num_range(y, 
+                      0, visibleVideoHeight,
+                      0, videoHeight
+                      )
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+
+let handMinX = -1 //-0.8
+let handMaxX = 0.8
+let handMinY = 2.3
+let handMaxY = 1 //0.8
+
+function setHandPosition(x, y, hand_name){  
+    if(hand_name == 'right'){
+      handObj = primaryHand      
+    }else if(hand_name == 'left'){
+      handObj = secondaryHand      
+    }
+    handPosition = handObj.getAttribute('position');
+    handPosition.x = change_num_range(x, 
+      0, visibleVideoWidth,
+      handMinX, handMaxX
+      )
+    handPosition.y = change_num_range(y, 
+        0, visibleVideoHeight,
+        handMinY, handMaxY
+      )      
+    handObj.setAttribute('position', AFRAME.utils.clone(handPosition));
+  }
+  
+
+
+var primaryHand; //right hand
+var secondaryHand; // left hand
 /**
  * Keyboard bindings to control controller.
  * Position controller in front of camera.
  */
 AFRAME.registerComponent('debug-controller', {
-  init: function () {
-    var primaryHand;
-    var secondaryHand;
+  init: function () {    
 
     if (!AFRAME.utils.getUrlParameter('debug')) { return; }
 
